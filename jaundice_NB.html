@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新生兒黃疸判讀參考工具</title>
+<style>
+*{box-sizing:border-box;font-family:system-ui, sans-serif;}
+body{padding:16px;max-width:560px;margin:0 auto;background:#f7f9fc;}
+h2{text-align:center;color:#222;font-size:20px;}
+.warn-top{background:#ffeeee;color:#b30000;padding:12px;border-radius:8px;margin-bottom:16px;font-size:14px;}
+.item{margin:12px 0;}
+label{display:block;margin-bottom:5px;font-weight:500;}
+.row{display:flex;gap:10px;}
+.row .item{flex:1;margin:0;}
+input,select{width:100%;padding:10px;font-size:16px;border:1px solid #ccc;border-radius:6px;background:#fff;}
+button{width:100%;padding:14px;background:#005b96;color:white;border:none;border-radius:8px;font-size:17px;margin-top:12px;font-weight:bold;}
+#result{margin-top:18px;padding:16px;border-radius:10px;background:#fff;border:1px solid #dde;}
+.level-ok{background:#e8f5e9;}
+.level-photo{background:#fff3cd;}
+.level-photo-plus{background:#ffe6cc;}
+.level-exchange{background:#ffdddd;}
+.source{margin-top:20px;font-size:13px;color:#555;text-align:right;}
+
+.table-toggle{margin-top:18px;}
+.table-toggle summary{cursor:pointer;padding:12px;background:#eef4fb;border:1px solid #c9d8e8;border-radius:8px;font-weight:bold;color:#005b96;}
+.full-table{margin-top:12px;padding:12px;background:#fff;border:1px solid #dde;border-radius:10px;overflow-x:auto;}
+.full-table table{width:100%;border-collapse:collapse;font-size:13px;}
+.full-table th,.full-table td{border:1px solid #ccd6e0;padding:6px;text-align:center;}
+.full-table th{background:#eaf2fb;color:#003f6b;}
+.photo-note{background:#fff3cd;}
+.ex-note{background:#ffdddd;}
+</style>
+</head>
+<body>
+<h2>新生兒黃疸判讀參考工具</h2>
+<div class="warn-top">
+⚠️【重要】本工具僅參考中國醫藥大學兒童醫院新生兒科工作手冊表格，<b>不可取代醫師診斷</b>。
+</div>
+
+<div class="item">
+<label>出生日期與時間</label>
+<input type="datetime-local" id="birthDT">
+</div>
+<div class="item">
+<label>膽紅素測量日期與時間</label>
+<input type="datetime-local" id="measureDT">
+</div>
+
+<div class="item">
+<label>懷孕週數 GA</label>
+<div class="row">
+  <div class="item">
+    <label>週</label>
+    <input type="number" min="20" max="44" id="gaWeek" placeholder="38">
+  </div>
+  <div class="item">
+    <label>天</label>
+    <input type="number" min="0" max="6" id="gaDay" placeholder="0">
+  </div>
+</div>
+</div>
+
+<div class="item">
+<label>是否有高危險因子<br/>(溶血、G6PD缺乏、窒息、敗血症、酸中毒、體溫不穩、嗜睡)</label>
+<select id="riskFactor">
+<option value="0">無高危險因子</option>
+<option value="1">有高危險因子</option>
+</select>
+</div>
+<div class="item">
+<label>總膽紅素 mg/dL</label>
+<input type="number" step="0.1" id="bili" placeholder="例如12.5">
+</div>
+
+<button onclick="calcJaundice()">執行判讀</button>
+<div id="result"></div>
+
+<details class="table-toggle">
+<summary>查看完整資料表</summary>
+<div class="full-table">
+<p><b>照光標準 (mg/dL)</b></p>
+<table>
+<tr>
+<th>出生時間</th>
+<th>GA 35~37+6週或≥38週+危險因子<br>中高風險族群</th>
+<th>≥GA38週且健康<br>低風險族群</th>
+</tr>
+<tr class="photo-note"><td colspan="3">照光標準 / 加強照光標準</td></tr>
+<tr><td>12h</td><td>6 / 7.5</td><td>7.5 / 9</td></tr>
+<tr><td>24h</td><td>8 / 10</td><td>10 / 11.5</td></tr>
+<tr><td>36h</td><td>9.5 / 11.5</td><td>11.5 / 13.5</td></tr>
+<tr><td>48h</td><td>12 / 13</td><td>13 / 15</td></tr>
+<tr><td>60h</td><td>12.5 / 14.5</td><td>14.5 / 16.5</td></tr>
+<tr><td>72h</td><td>13.5 / 15.5</td><td>15.5 / 17.5</td></tr>
+<tr><td>3.5d</td><td>14 / 16.5</td><td>16.5 / 19</td></tr>
+<tr><td>4d</td><td>14.5 / 17</td><td>17 / 20</td></tr>
+<tr><td>4.5d</td><td>15 / 18</td><td>18 / 20.5</td></tr>
+<tr><td>≥5d</td><td>15 / 18</td><td>18 / 21</td></tr>
+</table>
+
+<p style="margin-top:16px;"><b>換血標準 (mg/dL)</b></p>
+<table>
+<tr>
+<th>出生時間</th>
+<th>GA35~37+6週+危險因子<br>高風險族群</th>
+<th>≥38週+危險因子或GA35~37+6週健康<br>中風險族群</th>
+<th>≥38週且健康<br>低風險族群</th>
+</tr>
+<tr><td>12h</td><td>13.5</td><td>15</td><td>18</td></tr>
+<tr><td>24h</td><td>15</td><td>16.5</td><td>19</td></tr>
+<tr><td>36h</td><td>16</td><td>17</td><td>21</td></tr>
+<tr><td>48h</td><td>17</td><td>19</td><td>22</td></tr>
+<tr><td>60h</td><td>18</td><td>20</td><td>23</td></tr>
+<tr><td>72h</td><td>18.5</td><td>21</td><td>24</td></tr>
+<tr><td>3.5d</td><td>19</td><td>22</td><td>24.5</td></tr>
+<tr><td>≥4d</td><td>19</td><td>22.5</td><td>25</td></tr>
+</table>
+
+<p style="margin-top:12px;font-size:12px;color:#666;">
+危險因子：iso-immune related hemolysis, G6PD deficiency, asphyxia, lethargy, temperature instability, sepsis and acidosis。<br>
+資料來源：中國醫藥大學兒童醫院新生兒科工作手冊
+</p>
+</div>
+</details>
+
+<div class="source">資料來源：中國醫藥大學兒童醫院新生兒科工作手冊</div>
+
+<script>
+const tableData = {
+  photo: {
+    g1: [
+      {h:12, p:6, pp:7.5},
+      {h:24, p:8, pp:10},
+      {h:36, p:9.5, pp:11.5},
+      {h:48, p:12, pp:13},
+      {h:60, p:12.5, pp:14.5},
+      {h:72, p:13.5, pp:15.5},
+      {h:84, p:14, pp:16.5},
+      {h:96, p:14.5, pp:17},
+      {h:108,p:15, pp:18},
+      {h:120,p:15, pp:18}
+    ],
+    g2: [
+      {h:12, p:7.5, pp:9},
+      {h:24, p:10, pp:11.5},
+      {h:36, p:11.5, pp:13.5},
+      {h:48, p:13, pp:15},
+      {h:60, p:14.5, pp:16.5},
+      {h:72, p:15.5, pp:17.5},
+      {h:84, p:16.5, pp:19},
+      {h:96, p:17, pp:20},
+      {h:108,p:18, pp:20.5},
+      {h:120,p:18, pp:21}
+    ]
+  },
+  exchange:{
+    g3:[
+      {h:12,ex:13.5},
+      {h:24,ex:15},
+      {h:36,ex:16},
+      {h:48,ex:17},
+      {h:60,ex:18},
+      {h:72,ex:18.5},
+      {h:84,ex:19},
+      {h:96,ex:19},
+      {h:120,ex:19}
+    ],
+    g4:[
+      {h:12,ex:15},
+      {h:24,ex:16.5},
+      {h:36,ex:17},
+      {h:48,ex:19},
+      {h:60,ex:20},
+      {h:72,ex:21},
+      {h:84,ex:22},
+      {h:96,ex:22.5},
+      {h:120,ex:22.5}
+    ],
+    g5:[
+      {h:12,ex:18},
+      {h:24,ex:19},
+      {h:36,ex:21},
+      {h:48,ex:22},
+      {h:60,ex:23},
+      {h:72,ex:24},
+      {h:84,ex:24.5},
+      {h:96,ex:25},
+      {h:120,ex:25}
+    ]
+  }
+};
+
+function getThreshold(hour, arr){
+  let target = arr[0];
+  for(let item of arr){
+    if(hour >= item.h) target = item;
+  }
+  return target;
+}
+
+function calcJaundice(){
+  const birthDT = new Date(document.getElementById('birthDT').value);
+  const measureDT = new Date(document.getElementById('measureDT').value);
+  const gaWeek = parseInt(document.getElementById('gaWeek').value);
+  const gaDay = parseInt(document.getElementById('gaDay').value);
+  const hasRisk = parseInt(document.getElementById('riskFactor').value);
+  const bili = parseFloat(document.getElementById('bili').value);
+  const resDiv = document.getElementById('result');
+
+  if(isNaN(birthDT.getTime()) || isNaN(measureDT.getTime()) || isNaN(gaWeek) || isNaN(gaDay) || isNaN(bili)){
+    resDiv.innerHTML = "<span style='color:red'>請完整填寫所有欄位！</span>";
+    return;
+  }
+  if(measureDT < birthDT){
+    resDiv.innerHTML = "<span style='color:red'>測量時間不能早於出生時間！</span>";
+    return;
+  }
+  if(gaDay <0 || gaDay >6){
+    resDiv.innerHTML = "<span style='color:red'>天數必須介於0~6！</span>";
+    return;
+  }
+
+  const gaTotal = gaWeek + gaDay / 7;
+  const diffMs = measureDT - birthDT;
+  const ageHour = diffMs / (1000*60*60);
+  const ageDay = ageHour / 24;
+
+  let photoGroup;
+  if( (gaTotal >=35 && gaTotal <38) || (gaTotal >=38 && hasRisk) ){
+    photoGroup = "g1";
+  }else{
+    photoGroup = "g2";
+  }
+
+  let exchangeGroup;
+  if(gaTotal >=35 && gaTotal <38 && hasRisk){
+    exchangeGroup = "g3";
+  }else if( (gaTotal >=38 && hasRisk) || (gaTotal >=35 && gaTotal <38 && !hasRisk) ){
+    exchangeGroup = "g4";
+  }else{
+    exchangeGroup = "g5";
+  }
+
+  const photoTh = getThreshold(ageHour, tableData.photo[photoGroup]);
+  const exTh = getThreshold(ageHour, tableData.exchange[exchangeGroup]);
+
+  let statusText, cssClass;
+  if(bili >= exTh.ex){
+    statusText = `🔴【達換血標準】膽紅素 ${bili} ≥ ${exTh.ex} mg/dL`;
+    cssClass = "level-exchange";
+  }else if(bili >= photoTh.pp){
+    statusText = `🟠【達加強照光標準】膽紅素 ${bili} ≥ ${photoTh.pp} mg/dL`;
+    cssClass = "level-photo-plus";
+  }else if(bili >= photoTh.p){
+    statusText = `🟡【達照光標準】膽紅素 ${bili} ≥ ${photoTh.p} mg/dL`;
+    cssClass = "level-photo";
+  }else{
+    statusText = `🟢【未達照光標準】膽紅素 ${bili} < ${photoTh.p} mg/dL，持續追蹤`;
+    cssClass = "level-ok";
+  }
+
+  resDiv.className = cssClass;
+  resDiv.innerHTML = `
+<b>出生後年齡：</b>${ageHour.toFixed(1)}小時（${ageDay.toFixed(2)}天）<br>
+<b>胎齡：</b>${gaWeek}週${gaDay}天｜${hasRisk?"有高危險因子":"無高危險因子"}<br>
+<b>本次膽紅素：</b>${bili} mg/dL<br><br>
+<b>閾值參考：</b><br>
+照光標準：${photoTh.p} mg/dL<br>
+加強照光標準：${photoTh.pp} mg/dL<br>
+換血標準：${exTh.ex} mg/dL<br><br>
+${statusText}<br><br>
+<span style="color:#900;font-size:13px;">再次提醒：本工具僅為手冊表格參考，實際處置由臨床醫師綜合評估。</span>
+`;
+}
+</script>
+</body>
+</html>
